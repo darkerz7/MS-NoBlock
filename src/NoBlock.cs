@@ -25,53 +25,27 @@ namespace MS_NoBlock
 
         private IConVar? g_cvar_teammates;
         private IConVar? g_cvar_enemies;
-        bool bActivate = false;
 
         public bool Init()
         {
             g_cvar_teammates = _convars.FindConVar("mp_solid_teammates");
-            if (g_cvar_teammates != null)
-            {
-                g_cvar_teammates.Set(false);
-                _convars.InstallChangeHook(g_cvar_teammates, OnCvarTeammatesChanged);
-            }
+            g_cvar_teammates?.Set(false);
             g_cvar_enemies = _convars.FindConVar("mp_solid_enemies");
-            if (g_cvar_enemies != null)
-            {
-                g_cvar_enemies.Set(false);
-                _convars.InstallChangeHook(g_cvar_enemies, OnCvarEnemiesChanged);
-            }
+            g_cvar_enemies?.Set(false);
+
             _modSharp.InstallGameListener(this);
             _entities.InstallEntityListener(this);
             return true;
         }
 
-        private void OnCvarTeammatesChanged(IConVar conVar)
+        public void OnRoundRestarted()
         {
-            if (bActivate && conVar.GetBool()) conVar.Set(false);
-        }
-
-        private void OnCvarEnemiesChanged(IConVar conVar)
-        {
-            if (bActivate && conVar.GetBool()) conVar.Set(false);
-        }
-
-        public void OnGameActivate()
-        {
-            bActivate = true;
             g_cvar_teammates?.Set(false);
             g_cvar_enemies?.Set(false);
         }
 
-        public void OnGameDeactivate()
-        {
-            bActivate = false;
-        }
-
         public void Shutdown()
         {
-            if (g_cvar_teammates != null) _convars.RemoveChangeHook(g_cvar_teammates, OnCvarTeammatesChanged);
-            if (g_cvar_enemies != null) _convars.RemoveChangeHook(g_cvar_enemies, OnCvarEnemiesChanged);
             _modSharp!.RemoveGameListener(this);
             _entities.RemoveEntityListener(this);
         }
